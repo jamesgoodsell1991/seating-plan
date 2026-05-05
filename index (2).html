@@ -1,0 +1,1364 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Seating Plan</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --cream: #F5F0E8;
+    --parchment: #EDE6D6;
+    --deep-navy: #1A2332;
+    --navy: #243447;
+    --gold: #B8942A;
+    --gold-light: #D4AF50;
+    --warm-grey: #8A8278;
+    --dark-grey: #3A3530;
+    --bench-a: #2C4A3E;
+    --bench-c: #1A2332;
+    --bench-e: #3D2B1F;
+    --bench-g: #2C3A4A;
+    --visitor-bg: #4A3728;
+    --row2-bg: #2A3A2A;
+    --row3-bg: #2A2A3A;
+    --success: #4A7C59;
+    --border: rgba(184,148,42,0.3);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--deep-navy);
+    color: var(--cream);
+    font-family: 'DM Mono', monospace;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ── PASSWORD SCREEN ── */
+  #password-screen {
+    position: fixed; inset: 0; z-index: 1000;
+    background: var(--deep-navy);
+    display: flex; align-items: center; justify-content: center;
+    flex-direction: column;
+    gap: 0;
+  }
+
+  .pw-card {
+    background: var(--navy);
+    border: 1px solid var(--border);
+    padding: 56px 64px;
+    width: 420px;
+    position: relative;
+  }
+
+  .pw-card::before {
+    content: '';
+    position: absolute;
+    top: -1px; left: 40px; right: 40px; height: 2px;
+    background: linear-gradient(90deg, transparent, var(--gold), transparent);
+  }
+
+  .pw-emblem {
+    text-align: center;
+    margin-bottom: 36px;
+  }
+
+  .pw-emblem .cross {
+    font-size: 28px;
+    color: var(--gold);
+    display: block;
+    margin-bottom: 12px;
+    letter-spacing: 8px;
+  }
+
+  .pw-emblem h1 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 26px;
+    font-weight: 600;
+    color: var(--cream);
+    letter-spacing: 0.08em;
+    line-height: 1.2;
+  }
+
+  .pw-emblem p {
+    font-size: 10px;
+    color: var(--warm-grey);
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    margin-top: 8px;
+  }
+
+  .pw-divider {
+    width: 40px; height: 1px;
+    background: var(--border);
+    margin: 24px auto;
+  }
+
+  .pw-label {
+    font-size: 9px;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--warm-grey);
+    margin-bottom: 8px;
+    display: block;
+  }
+
+  .pw-input {
+    width: 100%;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid var(--border);
+    color: var(--cream);
+    font-family: 'DM Mono', monospace;
+    font-size: 14px;
+    padding: 14px 16px;
+    letter-spacing: 0.15em;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+
+  .pw-input:focus { border-color: var(--gold); }
+
+  .pw-btn {
+    width: 100%;
+    margin-top: 16px;
+    padding: 14px;
+    background: var(--gold);
+    color: var(--deep-navy);
+    border: none;
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    cursor: pointer;
+    font-weight: 500;
+    transition: background 0.2s;
+  }
+
+  .pw-btn:hover { background: var(--gold-light); }
+
+  .pw-error {
+    margin-top: 12px;
+    font-size: 10px;
+    color: #C0604A;
+    letter-spacing: 0.1em;
+    text-align: center;
+    height: 16px;
+  }
+
+  /* ── MAIN APP ── */
+  #app { display: none; }
+
+  /* Header */
+  .header {
+    background: var(--navy);
+    border-bottom: 1px solid var(--border);
+    padding: 20px 40px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky; top: 0; z-index: 100;
+  }
+
+  .header-left { display: flex; align-items: center; gap: 20px; }
+
+  .header-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 22px;
+    font-weight: 600;
+    color: var(--cream);
+    letter-spacing: 0.05em;
+  }
+
+  .header-date {
+    font-size: 10px;
+    color: var(--gold);
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+  }
+
+  .header-right { display: flex; align-items: center; gap: 12px; }
+
+  .btn {
+    padding: 10px 20px;
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    cursor: pointer;
+    border: 1px solid var(--border);
+    transition: all 0.2s;
+  }
+
+  .btn-outline {
+    background: transparent;
+    color: var(--warm-grey);
+  }
+  .btn-outline:hover { border-color: var(--gold); color: var(--gold); }
+
+  .btn-primary {
+    background: var(--gold);
+    color: var(--deep-navy);
+    border-color: var(--gold);
+    font-weight: 500;
+  }
+  .btn-primary:hover { background: var(--gold-light); }
+
+  .btn-danger {
+    background: transparent;
+    color: #C0604A;
+    border-color: rgba(192,96,74,0.4);
+  }
+  .btn-danger:hover { background: rgba(192,96,74,0.1); }
+
+  /* Status bar */
+  .status-bar {
+    background: rgba(0,0,0,0.2);
+    border-bottom: 1px solid var(--border);
+    padding: 10px 40px;
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    font-size: 10px;
+    color: var(--warm-grey);
+    letter-spacing: 0.1em;
+  }
+
+  .status-dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--success);
+    display: inline-block;
+    margin-right: 6px;
+  }
+  .status-dot.loading { background: var(--gold); animation: pulse 1s infinite; }
+  .status-dot.error { background: #C0604A; }
+
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+
+  .status-sep { color: var(--border); }
+
+  /* Controls */
+  .controls {
+    padding: 20px 40px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+    border-bottom: 1px solid var(--border);
+    background: rgba(0,0,0,0.1);
+  }
+
+  .control-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .control-label {
+    font-size: 9px;
+    color: var(--warm-grey);
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+  }
+
+  .control-select {
+    background: var(--navy);
+    border: 1px solid var(--border);
+    color: var(--cream);
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    padding: 8px 12px;
+    outline: none;
+    cursor: pointer;
+  }
+
+  .control-select:focus { border-color: var(--gold); }
+
+  /* Main layout */
+  .main {
+    padding: 32px 40px;
+    max-width: 1400px;
+    margin: 0 auto;
+  }
+
+  /* Section headers */
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 20px;
+    margin-top: 32px;
+  }
+
+  .section-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--cream);
+    letter-spacing: 0.05em;
+  }
+
+  .section-line {
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  .section-count {
+    font-size: 9px;
+    color: var(--warm-grey);
+    letter-spacing: 0.2em;
+    background: rgba(255,255,255,0.05);
+    padding: 4px 10px;
+    border: 1px solid var(--border);
+  }
+
+  /* ── ROW 1 ARENA LAYOUT ── */
+  .arena-container {
+    background: var(--navy);
+    border: 1px solid var(--border);
+    padding: 32px;
+    position: relative;
+  }
+
+  .arena-container::before {
+    content: '';
+    position: absolute;
+    top: -1px; left: 60px; right: 60px; height: 2px;
+    background: linear-gradient(90deg, transparent, var(--gold), transparent);
+  }
+
+  .arena-label {
+    font-size: 9px;
+    color: var(--gold);
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    text-align: center;
+    margin-bottom: 24px;
+  }
+
+  /* Arena shape - octagonal representation */
+  .arena {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    grid-template-rows: auto auto auto;
+    gap: 16px;
+    position: relative;
+  }
+
+  /* E bench — top, spans full width */
+  .bench-row-top {
+    grid-column: 1 / -1;
+    display: flex;
+    justify-content: center;
+  }
+
+  /* Middle row: A bench | Floor | G bench */
+  .bench-row-middle {
+    display: contents;
+  }
+
+  /* A bench — left */
+  .bench-left { grid-column: 1; }
+
+  /* Floor / centre */
+  .arena-floor {
+    grid-column: 2;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 200px;
+    border: 1px dashed rgba(184,148,42,0.15);
+    position: relative;
+  }
+
+  .floor-label {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 48px;
+    font-weight: 700;
+    color: rgba(184,148,42,0.08);
+    letter-spacing: 0.1em;
+    user-select: none;
+    position: absolute;
+  }
+
+  .water-marker {
+    position: absolute;
+    top: 12px; left: 12px;
+    font-size: 9px;
+    color: var(--warm-grey);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    border: 1px solid var(--border);
+    padding: 4px 8px;
+  }
+
+  /* G bench — right */
+  .bench-right { grid-column: 3; }
+
+  /* C bench — bottom left of centre */
+  .bench-row-bottom {
+    grid-column: 1 / -1;
+    display: flex;
+    justify-content: flex-start;
+    gap: 16px;
+  }
+
+  /* Individual bench */
+  .bench {
+    background: rgba(0,0,0,0.25);
+    border: 1px solid var(--border);
+    padding: 16px;
+    min-width: 200px;
+  }
+
+  .bench-header {
+    font-size: 9px;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    margin-bottom: 12px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .bench-a .bench-header { color: #7CB8A0; }
+  .bench-c .bench-header { color: #7A96B8; }
+  .bench-e .bench-header { color: #B8967A; }
+  .bench-g .bench-header { color: #7A8EB8; }
+
+  .bench-seats {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  /* For E bench which runs horizontally */
+  .bench-e .bench-seats {
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 4px;
+  }
+
+  .seat {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 8px;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.06);
+    transition: background 0.15s;
+    min-height: 32px;
+  }
+
+  .seat:hover { background: rgba(255,255,255,0.06); }
+
+  .seat.occupied {
+    background: rgba(184,148,42,0.08);
+    border-color: rgba(184,148,42,0.2);
+  }
+
+  .seat.occupied:hover { background: rgba(184,148,42,0.12); }
+
+  .seat-code {
+    font-size: 9px;
+    color: var(--warm-grey);
+    letter-spacing: 0.1em;
+    min-width: 28px;
+    flex-shrink: 0;
+  }
+
+  .seat-name {
+    font-size: 11px;
+    color: var(--cream);
+    line-height: 1.2;
+  }
+
+  .seat-empty .seat-name {
+    color: rgba(255,255,255,0.15);
+    font-style: italic;
+    font-size: 10px;
+  }
+
+  .aisle-seats {
+    margin-top: 8px;
+    padding-top: 8px;
+    border-top: 1px dashed rgba(184,148,42,0.15);
+  }
+
+  .aisle-label {
+    font-size: 8px;
+    color: var(--warm-grey);
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+
+  /* ── ROWS 2 & 3 ── */
+  .rows-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+    margin-top: 8px;
+  }
+
+  .row-panel {
+    background: var(--navy);
+    border: 1px solid var(--border);
+    overflow: hidden;
+    position: relative;
+  }
+
+  .row-panel::before {
+    content: '';
+    position: absolute;
+    top: -1px; left: 20%; right: 20%; height: 2px;
+    background: linear-gradient(90deg, transparent, var(--gold), transparent);
+  }
+
+  .row-panel-header {
+    padding: 14px 20px;
+    border-bottom: 1px solid var(--border);
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--cream);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .congregation-group { margin: 0; }
+
+  .congregation-header {
+    padding: 8px 20px;
+    background: rgba(0,0,0,0.2);
+    font-size: 8px;
+    color: var(--gold);
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    border-bottom: 1px solid rgba(184,148,42,0.1);
+    display: flex;
+    justify-content: space-between;
+  }
+
+  .congregation-members {
+    padding: 8px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .member-item {
+    padding: 5px 0;
+    font-size: 12px;
+    color: var(--cream);
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .member-item:last-child { border-bottom: none; }
+
+  .member-dot {
+    width: 4px; height: 4px; border-radius: 50%;
+    background: var(--gold);
+    opacity: 0.5;
+    flex-shrink: 0;
+  }
+
+  /* Visitor row */
+  .visitor-tag {
+    font-size: 8px;
+    color: var(--warm-grey);
+    letter-spacing: 0.1em;
+    background: rgba(255,255,255,0.05);
+    padding: 2px 6px;
+    margin-left: auto;
+  }
+
+  /* Empty state */
+  .empty-state {
+    padding: 24px;
+    text-align: center;
+    color: var(--warm-grey);
+    font-size: 11px;
+    letter-spacing: 0.1em;
+  }
+
+  /* Loading overlay */
+  #loading {
+    position: fixed; inset: 0; z-index: 500;
+    background: rgba(26,35,50,0.85);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .loading-spinner {
+    width: 32px; height: 32px;
+    border: 2px solid var(--border);
+    border-top-color: var(--gold);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .loading-text {
+    font-size: 10px;
+    color: var(--warm-grey);
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+  }
+
+  /* Summary stats */
+  .stats-bar {
+    display: flex;
+    gap: 24px;
+    padding: 16px 40px;
+    background: rgba(0,0,0,0.15);
+    border-bottom: 1px solid var(--border);
+    flex-wrap: wrap;
+  }
+
+  .stat {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .stat-value {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 22px;
+    font-weight: 600;
+    color: var(--gold);
+  }
+
+  .stat-label {
+    font-size: 8px;
+    color: var(--warm-grey);
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+  }
+
+  .stat-divider {
+    width: 1px;
+    background: var(--border);
+    align-self: stretch;
+  }
+
+  /* Error panel */
+  .error-panel {
+    background: rgba(192,96,74,0.1);
+    border: 1px solid rgba(192,96,74,0.3);
+    padding: 20px 24px;
+    margin: 24px 40px;
+    font-size: 12px;
+    color: #E08070;
+    line-height: 1.6;
+  }
+
+  /* Config panel */
+  #config-panel {
+    display: none;
+    position: fixed; inset: 0; z-index: 200;
+    background: rgba(0,0,0,0.7);
+    align-items: center;
+    justify-content: center;
+  }
+
+  .config-card {
+    background: var(--navy);
+    border: 1px solid var(--border);
+    padding: 40px 48px;
+    width: 560px;
+    position: relative;
+    max-height: 80vh;
+    overflow-y: auto;
+  }
+
+  .config-card::before {
+    content: '';
+    position: absolute;
+    top: -1px; left: 30%; right: 30%; height: 2px;
+    background: linear-gradient(90deg, transparent, var(--gold), transparent);
+  }
+
+  .config-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 22px;
+    font-weight: 600;
+    margin-bottom: 24px;
+    color: var(--cream);
+  }
+
+  .config-field { margin-bottom: 20px; }
+
+  .config-field label {
+    display: block;
+    font-size: 9px;
+    color: var(--warm-grey);
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+
+  .config-field input {
+    width: 100%;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid var(--border);
+    color: var(--cream);
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    padding: 10px 12px;
+    outline: none;
+  }
+
+  .config-field input:focus { border-color: var(--gold); }
+
+  .config-note {
+    font-size: 10px;
+    color: var(--warm-grey);
+    line-height: 1.6;
+    margin-top: 4px;
+  }
+
+  .config-actions {
+    display: flex;
+    gap: 12px;
+    margin-top: 24px;
+    justify-content: flex-end;
+  }
+
+  /* ── DAY TOGGLE ── */
+  .day-toggle {
+    display: flex;
+    background: rgba(0,0,0,0.3);
+    border: 1px solid var(--border);
+    padding: 3px;
+    gap: 3px;
+  }
+
+  .day-toggle-btn {
+    padding: 8px 20px;
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    cursor: pointer;
+    border: none;
+    background: transparent;
+    color: var(--warm-grey);
+    transition: all 0.2s;
+  }
+
+  .day-toggle-btn.active {
+    background: var(--gold);
+    color: var(--deep-navy);
+    font-weight: 500;
+  }
+
+  .day-toggle-btn:not(.active):hover {
+    color: var(--cream);
+  }
+
+  @media print {
+    body { background: white; color: black; }
+    .header, .status-bar, .controls, .stats-bar,
+    #config-panel, #loading, #password-screen,
+    .btn { display: none !important; }
+    #app { display: block !important; }
+    .main { padding: 16px; max-width: 100%; }
+    .arena-container, .row-panel, .bench {
+      border: 1px solid #ccc;
+      background: white;
+    }
+    .bench-header, .section-title, .congregation-header { color: black; }
+    .seat-name, .member-item { color: black; }
+    .seat-code, .warm-grey { color: #666; }
+    .floor-label { color: #eee; }
+    .arena-floor { border-color: #eee; }
+    .section-line { background: #ccc; }
+    .row-panel::before, .arena-container::before, .config-card::before { display: none; }
+  }
+
+  /* Responsive */
+  @media (max-width: 900px) {
+    .header { padding: 16px 20px; flex-wrap: wrap; gap: 12px; }
+    .main { padding: 20px; }
+    .controls { padding: 16px 20px; }
+    .stats-bar { padding: 12px 20px; }
+    .arena { grid-template-columns: 1fr; }
+    .bench-left, .bench-right { grid-column: 1; }
+    .arena-floor { display: none; }
+    .rows-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<!-- PASSWORD SCREEN (disabled for testing) -->
+<div id="password-screen" style="display:none"></div>
+
+<!-- LOADING -->
+<div id="loading">
+  <div class="loading-spinner"></div>
+  <div class="loading-text">Fetching attendance data…</div>
+</div>
+
+<!-- CONFIG PANEL -->
+<div id="config-panel">
+  <div class="config-card">
+    <div class="config-title">Configuration</div>
+
+    <div class="config-field">
+      <label>Smartsheet API Token</label>
+      <input type="password" id="cfg-token" placeholder="Your API token">
+      <div class="config-note">Your token is stored only in this browser session and never sent anywhere except Smartsheet's API.</div>
+    </div>
+
+    <div class="config-field">
+      <label>Visitors Sheet ID</label>
+      <input type="text" id="cfg-visitors-id" placeholder="e.g. 7789155120899972">
+    </div>
+
+    <div class="config-field">
+      <label>Locals Sheet ID</label>
+      <input type="text" id="cfg-locals-id" placeholder="e.g. 4469389676990340">
+    </div>
+
+    <div class="config-field">
+      <label>Meeting Day Filter</label>
+      <input type="text" id="cfg-day-filter" placeholder="e.g. L/DAY" value="L/DAY">
+      <div class="config-note">Attendees with "L/DAY" or "SAT & L/DAY" in the Day/s of Attendance column will be included.</div>
+    </div>
+
+    <div class="config-field">
+      <label>Meeting Date (for display)</label>
+      <input type="text" id="cfg-meeting-date" placeholder="e.g. 06/05/26">
+    </div>
+
+    <div class="config-actions">
+      <button class="btn btn-outline" onclick="closeConfig()">Cancel</button>
+      <button class="btn btn-primary" onclick="saveConfig()">Save & Reload</button>
+    </div>
+  </div>
+</div>
+
+<!-- MAIN APP -->
+<div id="app">
+
+  <div class="header">
+    <div class="header-left">
+      <div>
+        <div class="header-title">Seating Plan</div>
+        <div class="header-date" id="header-date">—</div>
+      </div>
+    </div>
+    <div style="display:flex;align-items:center;gap:16px;">
+      <div class="day-toggle">
+        <button class="day-toggle-btn" id="toggle-sat" onclick="switchDay('SAT')">Saturday</button>
+        <button class="day-toggle-btn active" id="toggle-lday" onclick="switchDay('L/DAY')">L/Day</button>
+      </div>
+      <button class="btn btn-outline" onclick="openConfig()">⚙ Configure</button>
+      <button class="btn btn-outline" onclick="loadData()">↻ Refresh</button>
+      <button class="btn btn-primary" onclick="window.print()">⬡ Print / Export</button>
+    </div>
+  </div>
+
+  <div class="status-bar">
+    <span><span class="status-dot" id="status-dot"></span><span id="status-text">Ready</span></span>
+    <span class="status-sep">|</span>
+    <span id="status-detail">Configure to load attendance data</span>
+  </div>
+
+  <div class="stats-bar" id="stats-bar" style="display:none">
+    <div class="stat"><div class="stat-value" id="stat-total">0</div><div class="stat-label">Total Attendees</div></div>
+    <div class="stat-divider"></div>
+    <div class="stat"><div class="stat-value" id="stat-row1">0</div><div class="stat-label">Row 1</div></div>
+    <div class="stat-divider"></div>
+    <div class="stat"><div class="stat-value" id="stat-row2">0</div><div class="stat-label">Row 2</div></div>
+    <div class="stat-divider"></div>
+    <div class="stat"><div class="stat-value" id="stat-row3">0</div><div class="stat-label">Row 3</div></div>
+    <div class="stat-divider"></div>
+    <div class="stat"><div class="stat-value" id="stat-visitors">0</div><div class="stat-label">Visitors</div></div>
+    <div class="stat-divider"></div>
+    <div class="stat"><div class="stat-value" id="stat-locals">0</div><div class="stat-label">Locals</div></div>
+  </div>
+
+  <div id="error-container"></div>
+
+  <div class="main">
+
+    <!-- ROW 1 -->
+    <div class="section-header">
+      <div class="section-title">Row 1 — Bench Positions</div>
+      <div class="section-line"></div>
+      <div class="section-count" id="row1-count">0 seated</div>
+    </div>
+
+    <div class="arena-container">
+      <div class="arena-label">Arena Floor Plan</div>
+      <div class="arena">
+
+        <!-- E Bench — top -->
+        <div class="bench-row-top">
+          <div class="bench bench-e" style="width:100%">
+            <div class="bench-header">
+              <span>Bench E</span>
+              <span id="bench-e-count">0/8</span>
+            </div>
+            <div class="bench-seats" id="bench-e-seats"></div>
+            <div class="aisle-seats">
+              <div class="aisle-label">E Aisle</div>
+              <div class="bench-seats" style="flex-direction:row" id="bench-ei-seats"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- A bench — left -->
+        <div class="bench-left">
+          <div class="bench bench-a">
+            <div class="bench-header">
+              <span>Bench A</span>
+              <span id="bench-a-count">0/8</span>
+            </div>
+            <div class="bench-seats" id="bench-a-seats"></div>
+            <div class="aisle-seats">
+              <div class="aisle-label">A Aisle</div>
+              <div class="bench-seats" id="bench-ai-seats"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Floor -->
+        <div class="arena-floor">
+          <div class="floor-label">✛</div>
+          <div class="water-marker">Water</div>
+        </div>
+
+        <!-- G bench — right -->
+        <div class="bench-right">
+          <div class="bench bench-g">
+            <div class="bench-header">
+              <span>Bench G</span>
+              <span id="bench-g-count">0/8</span>
+            </div>
+            <div class="bench-seats" id="bench-g-seats"></div>
+            <div class="aisle-seats">
+              <div class="aisle-label">G Aisle</div>
+              <div class="bench-seats" id="bench-gi-seats"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- C bench — bottom -->
+        <div class="bench-row-bottom">
+          <div class="bench bench-c" style="flex:1">
+            <div class="bench-header">
+              <span>Bench C</span>
+              <span id="bench-c-count">0/8</span>
+            </div>
+            <div class="bench-seats" id="bench-c-seats"></div>
+            <div class="aisle-seats">
+              <div class="aisle-label">C Aisle</div>
+              <div class="bench-seats" style="flex-direction:row" id="bench-ci-seats"></div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ROW 2 -->
+    <div class="section-header" style="margin-top:40px">
+      <div class="section-title">Row 2</div>
+      <div class="section-line"></div>
+      <div class="section-count" id="row2-count">0 seated</div>
+    </div>
+    <div class="rows-grid">
+      <div class="row-panel">
+        <div class="row-panel-header"><span>Visitors</span><span id="row2-visitor-count" style="font-size:11px;color:var(--warm-grey)">0</span></div>
+        <div id="row2-visitors"></div>
+      </div>
+      <div class="row-panel">
+        <div class="row-panel-header"><span>Sydney</span><span id="row2-sydney-count" style="font-size:11px;color:var(--warm-grey)">0</span></div>
+        <div id="row2-sydney"></div>
+      </div>
+      <div class="row-panel">
+        <div class="row-panel-header"><span>Kellyville</span><span id="row2-kellyville-count" style="font-size:11px;color:var(--warm-grey)">0</span></div>
+        <div id="row2-kellyville"></div>
+      </div>
+      <div class="row-panel">
+        <div class="row-panel-header"><span>Engadine</span><span id="row2-engadine-count" style="font-size:11px;color:var(--warm-grey)">0</span></div>
+        <div id="row2-engadine"></div>
+      </div>
+    </div>
+
+    <!-- ROW 3 -->
+    <div class="section-header" style="margin-top:40px">
+      <div class="section-title">Row 3</div>
+      <div class="section-line"></div>
+      <div class="section-count" id="row3-count">0 seated</div>
+    </div>
+    <div class="rows-grid">
+      <div class="row-panel">
+        <div class="row-panel-header"><span>Visitors</span><span id="row3-visitor-count" style="font-size:11px;color:var(--warm-grey)">0</span></div>
+        <div id="row3-visitors"></div>
+      </div>
+      <div class="row-panel">
+        <div class="row-panel-header"><span>Sydney</span><span id="row3-sydney-count" style="font-size:11px;color:var(--warm-grey)">0</span></div>
+        <div id="row3-sydney"></div>
+      </div>
+      <div class="row-panel">
+        <div class="row-panel-header"><span>Kellyville</span><span id="row3-kellyville-count" style="font-size:11px;color:var(--warm-grey)">0</span></div>
+        <div id="row3-kellyville"></div>
+      </div>
+      <div class="row-panel">
+        <div class="row-panel-header"><span>Engadine</span><span id="row3-engadine-count" style="font-size:11px;color:var(--warm-grey)">0</span></div>
+        <div id="row3-engadine"></div>
+      </div>
+    </div>
+
+    <div style="height:60px"></div>
+  </div>
+</div>
+
+<script>
+// ── CONFIGURATION ──
+const CONFIG_KEY = 'seating_plan_config';
+const PASSWORD = 'lday2026'; // Change this to your preferred password
+
+function getConfig() {
+  try { return JSON.parse(localStorage.getItem(CONFIG_KEY) || '{}'); } catch { return {}; }
+}
+function saveConfigData(cfg) {
+  localStorage.setItem(CONFIG_KEY, JSON.stringify(cfg));
+}
+
+// ── PASSWORD ──
+function checkPassword() {
+  const val = document.getElementById('pw-input').value;
+  const err = document.getElementById('pw-error');
+  if (val === PASSWORD) {
+    document.getElementById('password-screen').style.display = 'none';
+    document.getElementById('app').style.display = 'block';
+    initApp();
+  } else {
+    err.textContent = 'Incorrect access code. Please try again.';
+    document.getElementById('pw-input').value = '';
+    setTimeout(() => err.textContent = '', 3000);
+  }
+}
+
+document.getElementById('pw-input').addEventListener('keydown', e => {
+  if (e.key === 'Enter') checkPassword();
+});
+
+// ── CONFIG PANEL ──
+function openConfig() {
+  const cfg = getConfig();
+  document.getElementById('cfg-token').value = cfg.token || '';
+  document.getElementById('cfg-visitors-id').value = cfg.visitorsId || '7789155120899972';
+  document.getElementById('cfg-locals-id').value = cfg.localsId || '4469389676990340';
+  document.getElementById('cfg-day-filter').value = cfg.dayFilter || 'L/DAY';
+  document.getElementById('cfg-meeting-date').value = cfg.meetingDate || '';
+  document.getElementById('config-panel').style.display = 'flex';
+}
+
+function closeConfig() {
+  document.getElementById('config-panel').style.display = 'none';
+}
+
+function saveConfig() {
+  const cfg = {
+    token: document.getElementById('cfg-token').value.trim(),
+    visitorsId: document.getElementById('cfg-visitors-id').value.trim(),
+    localsId: document.getElementById('cfg-locals-id').value.trim(),
+    dayFilter: document.getElementById('cfg-day-filter').value.trim(),
+    meetingDate: document.getElementById('cfg-meeting-date').value.trim()
+  };
+  saveConfigData(cfg);
+  closeConfig();
+  loadData();
+}
+
+// ── SEAT DEFINITIONS ──
+const BENCH_SEATS = {
+  A:  ['A1','A2','A3','A4','A5','A6','A7','A8'],
+  Ai: ['Ai1','Ai2'],
+  C:  ['C1','C2','C3','C4','C5','C6','C7','C8'],
+  Ci: ['Ci1','Ci2'],
+  E:  ['E1','E2','E3','E4','E5','E6','E7','E8'],
+  Ei: ['Ei1','Ei2','Ei3'],
+  G:  ['G1','G2','G3','G4','G5','G6','G7','G8'],
+  Gi: ['Gi1','Gi2'],
+};
+
+// ── STATUS ──
+function setStatus(state, text, detail) {
+  const dot = document.getElementById('status-dot');
+  dot.className = 'status-dot' + (state === 'loading' ? ' loading' : state === 'error' ? ' error' : '');
+  document.getElementById('status-text').textContent = text;
+  document.getElementById('status-detail').textContent = detail || '';
+}
+
+// ── SMARTSHEET API ──
+async function fetchSheet(token, sheetId) {
+  const res = await fetch(`https://api.smartsheet.com/2.0/sheets/${sheetId}`, {
+    headers: { 'Authorization': `Bearer ${token}` }
+  });
+  if (!res.ok) throw new Error(`Smartsheet error ${res.status}: ${res.statusText}`);
+  return res.json();
+}
+
+function buildRowMap(sheet) {
+  const colMap = {};
+  sheet.columns.forEach(c => { colMap[c.title] = c.id; });
+  return { colMap, rows: sheet.rows || [] };
+}
+
+function getCellValue(row, colMap, colName) {
+  const colId = colMap[colName];
+  if (!colId) return '';
+  const cell = (row.cells || []).find(c => c.columnId === colId);
+  return cell ? (cell.displayValue || cell.value || '') : '';
+}
+
+function parseAttendees(sheet, isVisitor, dayFilter) {
+  const { colMap, rows } = buildRowMap(sheet);
+  const attendees = [];
+
+  rows.forEach(row => {
+    // Filter: Approved
+    const approved = getCellValue(row, colMap, 'Approved');
+    if (String(approved).toLowerCase() !== 'yes') return;
+
+    // Filter: Day/s of Attendance
+    const days = getCellValue(row, colMap, 'Day/s of Attendance');
+    const matchDay = days === dayFilter || days === `SAT & ${dayFilter}`;
+    if (!matchDay) return;
+
+    const name = getCellValue(row, colMap, 'Brother Name (Seating)');
+    if (!name) return;
+
+    const row_num = getCellValue(row, colMap, 'Row');
+    const locality = getCellValue(row, colMap, 'Locality') || getCellValue(row, colMap, 'Region') || '';
+    const benchPos = isVisitor ? '' : getCellValue(row, colMap, 'Row 1 Bench Position');
+
+    attendees.push({
+      name,
+      row: String(row_num).trim(),
+      locality: locality.trim(),
+      benchPos: benchPos.trim(),
+      isVisitor
+    });
+  });
+
+  return attendees;
+}
+
+// ── RENDER BENCHES ──
+function renderBench(containerId, seats, seatMap) {
+  const el = document.getElementById(containerId);
+  if (!el) return 0;
+  let occupied = 0;
+  el.innerHTML = '';
+  seats.forEach(code => {
+    const person = seatMap[code];
+    const div = document.createElement('div');
+    div.className = 'seat ' + (person ? 'occupied' : 'seat-empty');
+    div.innerHTML = `<span class="seat-code">${code}</span><span class="seat-name">${person || '—'}</span>`;
+    el.appendChild(div);
+    if (person) occupied++;
+  });
+  return occupied;
+}
+
+// ── RENDER ROW LIST ──
+function renderRowList(containerId, members, countId) {
+  const el = document.getElementById(containerId);
+  const countEl = document.getElementById(countId);
+  if (!el) return;
+  if (!members.length) {
+    el.innerHTML = '<div class="empty-state">No attendees</div>';
+    if (countEl) countEl.textContent = '0';
+    return;
+  }
+  el.innerHTML = '';
+  members.forEach(m => {
+    const div = document.createElement('div');
+    div.className = 'congregation-members';
+    div.innerHTML = `<div class="member-item"><span class="member-dot"></span>${m.name}</div>`;
+    el.appendChild(div);
+  });
+  if (countEl) countEl.textContent = members.length;
+}
+
+// ── MAIN RENDER ──
+function renderAll(allAttendees, cfg) {
+  // Build seat map for Row 1
+  const seatMap = {};
+  allAttendees.forEach(a => {
+    if (a.benchPos) seatMap[a.benchPos] = a.name;
+  });
+
+  // Row 1 benches
+  let r1Total = 0;
+  const benchDefs = [
+    { bench:'A', main:'bench-a-seats', aisle:'bench-ai-seats', countId:'bench-a-count', mainSeats:BENCH_SEATS.A, aisleSeats:BENCH_SEATS.Ai, max:8 },
+    { bench:'C', main:'bench-c-seats', aisle:'bench-ci-seats', countId:'bench-c-count', mainSeats:BENCH_SEATS.C, aisleSeats:BENCH_SEATS.Ci, max:8 },
+    { bench:'E', main:'bench-e-seats', aisle:'bench-ei-seats', countId:'bench-e-count', mainSeats:BENCH_SEATS.E, aisleSeats:BENCH_SEATS.Ei, max:8 },
+    { bench:'G', main:'bench-g-seats', aisle:'bench-gi-seats', countId:'bench-g-count', mainSeats:BENCH_SEATS.G, aisleSeats:BENCH_SEATS.Gi, max:8 },
+  ];
+
+  benchDefs.forEach(b => {
+    const mainOcc = renderBench(b.main, b.mainSeats, seatMap);
+    const aisleOcc = renderBench(b.aisle, b.aisleSeats, seatMap);
+    const total = mainOcc + aisleOcc;
+    r1Total += total;
+    const el = document.getElementById(b.countId);
+    if (el) el.textContent = `${mainOcc}/${b.max}`;
+  });
+
+  document.getElementById('row1-count').textContent = `${r1Total} seated`;
+
+  // Row 2 & 3 groupings
+  const congregations = ['Visitors', 'Sydney', 'Kellyville', 'Engadine'];
+  const rowData = { '2': {}, '3': {} };
+
+  congregations.forEach(c => {
+    rowData['2'][c] = [];
+    rowData['3'][c] = [];
+  });
+
+  allAttendees.forEach(a => {
+    if (a.benchPos) return; // Already in Row 1
+    const rowKey = String(a.row);
+    if (rowKey !== '2' && rowKey !== '3') return;
+
+    let group = 'Visitors';
+    if (!a.isVisitor) {
+      const loc = a.locality.toLowerCase();
+      if (loc.includes('kellyville')) group = 'Kellyville';
+      else if (loc.includes('engadine')) group = 'Engadine';
+      else group = 'Sydney';
+    }
+
+    rowData[rowKey][group].push(a);
+  });
+
+  ['2','3'].forEach(rowNum => {
+    let rowTotal = 0;
+    congregations.forEach(cong => {
+      const members = rowData[rowNum][cong];
+      rowTotal += members.length;
+      const suffix = cong.toLowerCase();
+      const containerId = `row${rowNum}-${suffix}`;
+      const countId = `row${rowNum}-${suffix}-count`;
+      renderRowList(containerId, members, countId);
+    });
+    document.getElementById(`row${rowNum}-count`).textContent = `${rowTotal} seated`;
+  });
+
+  // Stats
+  const visitors = allAttendees.filter(a => a.isVisitor).length;
+  const locals = allAttendees.filter(a => !a.isVisitor).length;
+  const row2Total = Object.values(rowData['2']).flat().length;
+  const row3Total = Object.values(rowData['3']).flat().length;
+
+  document.getElementById('stat-total').textContent = allAttendees.length;
+  document.getElementById('stat-row1').textContent = r1Total;
+  document.getElementById('stat-row2').textContent = row2Total;
+  document.getElementById('stat-row3').textContent = row3Total;
+  document.getElementById('stat-visitors').textContent = visitors;
+  document.getElementById('stat-locals').textContent = locals;
+  document.getElementById('stats-bar').style.display = 'flex';
+}
+
+// ── LOAD DATA ──
+async function loadData() {
+  const cfg = getConfig();
+
+  if (!cfg.token) {
+    setStatus('error', 'Not configured', 'Click ⚙ Configure to enter your Smartsheet API token');
+    return;
+  }
+
+  const loading = document.getElementById('loading');
+  loading.style.display = 'flex';
+  setStatus('loading', 'Loading…', 'Fetching from Smartsheet');
+  document.getElementById('error-container').innerHTML = '';
+
+  try {
+    const dayFilter = activeDay;
+
+    const [visitorsSheet, localsSheet] = await Promise.all([
+      fetchSheet(cfg.token, cfg.visitorsId || '7789155120899972'),
+      fetchSheet(cfg.token, cfg.localsId || '4469389676990340')
+    ]);
+
+    const visitors = parseAttendees(visitorsSheet, true, dayFilter);
+    const locals = parseAttendees(localsSheet, false, dayFilter);
+    const all = [...locals, ...visitors];
+
+    const dateDisplay = cfg.meetingDate || new Date().toLocaleDateString('en-AU');
+    const dayLabel = activeDay === 'SAT' ? 'Saturday' : 'L/Day';
+    document.getElementById('header-date').textContent = `${dayLabel} — ${dateDisplay}`;
+
+    renderAll(all, cfg);
+    setStatus('ok', 'Live', `Last updated ${new Date().toLocaleTimeString('en-AU')} · ${all.length} attendees loaded`);
+  } catch (err) {
+    setStatus('error', 'Error', err.message);
+    document.getElementById('error-container').innerHTML = `
+      <div class="error-panel">
+        <strong>Could not load data:</strong> ${err.message}<br>
+        <br>Check your API token and Sheet IDs in ⚙ Configure. 
+        If the token is correct, ensure your Smartsheet account has access to both sheets.
+      </div>`;
+  } finally {
+    loading.style.display = 'none';
+  }
+}
+
+// ── ACTIVE DAY ──
+let activeDay = 'L/DAY';
+
+function switchDay(day) {
+  activeDay = day;
+  document.getElementById('toggle-sat').classList.toggle('active', day === 'SAT');
+  document.getElementById('toggle-lday').classList.toggle('active', day === 'L/DAY');
+  loadData();
+}
+
+document.getElementById('app').style.display = 'block';
+initApp();
+
+function initApp() {
+  const cfg = getConfig();
+  if (cfg.meetingDate) {
+    document.getElementById('header-date').textContent = `L/DAY — ${cfg.meetingDate}`;
+  }
+  // Pre-render empty benches
+  Object.entries(BENCH_SEATS).forEach(([key, seats]) => {
+    const id = `bench-${key.toLowerCase()}-seats`;
+    renderBench(id, seats, {});
+  });
+  if (cfg.token) loadData();
+  else setStatus('error', 'Not configured', 'Click ⚙ Configure to get started');
+}
+
+// Close config on backdrop click
+document.getElementById('config-panel').addEventListener('click', function(e) {
+  if (e.target === this) closeConfig();
+});
+</script>
+</body>
+</html>
