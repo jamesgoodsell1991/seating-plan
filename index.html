@@ -1041,6 +1041,9 @@
 </div>
 
 <script>
+// ── ACTIVE DAY — must be declared first ──
+var activeDay = 'L/DAY';
+
 // ── CONFIGURATION ──
 const CONFIG_KEY = 'seating_plan_config';
 const PASSWORD = 'lday2026'; // Change this to your preferred password
@@ -1096,6 +1099,14 @@ function saveConfig() {
   };
   saveConfigData(cfg);
   closeConfig();
+  loadData();
+}
+
+// ── DAY SWITCHING ──
+function switchDay(day) {
+  activeDay = day;
+  document.getElementById('toggle-sat').classList.toggle('active', day === 'SAT');
+  document.getElementById('toggle-lday').classList.toggle('active', day === 'L/DAY');
   loadData();
 }
 
@@ -1300,16 +1311,6 @@ function renderAll(allAttendees, cfg) {
   document.getElementById('stat-visitors').textContent = visitors;
   document.getElementById('stat-locals').textContent = locals;
   document.getElementById('stats-bar').style.display = 'flex';
-}
-
-// ── ACTIVE DAY ──
-var activeDay = 'L/DAY';
-
-function switchDay(day) {
-  activeDay = day;
-  document.getElementById('toggle-sat').classList.toggle('active', day === 'SAT');
-  document.getElementById('toggle-lday').classList.toggle('active', day === 'L/DAY');
-  loadData();
 }
 
 // ── LOAD DATA ──
