@@ -1299,6 +1299,16 @@ function renderAll(allAttendees, cfg) {
   document.getElementById('stats-bar').style.display = 'flex';
 }
 
+// ── ACTIVE DAY ──
+let activeDay = 'L/DAY';
+
+function switchDay(day) {
+  activeDay = day;
+  document.getElementById('toggle-sat').classList.toggle('active', day === 'SAT');
+  document.getElementById('toggle-lday').classList.toggle('active', day === 'L/DAY');
+  loadData();
+}
+
 // ── LOAD DATA ──
 async function loadData() {
   const cfg = getConfig();
@@ -1342,16 +1352,6 @@ async function loadData() {
   } finally {
     loading.style.display = 'none';
   }
-}
-
-// ── ACTIVE DAY ──
-let activeDay = 'L/DAY';
-
-function switchDay(day) {
-  activeDay = day;
-  document.getElementById('toggle-sat').classList.toggle('active', day === 'SAT');
-  document.getElementById('toggle-lday').classList.toggle('active', day === 'L/DAY');
-  loadData();
 }
 
 document.getElementById('app').style.display = 'block';
