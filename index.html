@@ -1111,9 +1111,19 @@ function setStatus(state, text, detail) {
 }
 
 // ── SMARTSHEET API ──
+// Uses a CORS proxy for local file testing.
 async function fetchSheet(token, sheetId) {
-  const res = await fetch(`https://api.smartsheet.com/2.0/sheets/${sheetId}`, {
-    headers: { 'Authorization': `Bearer ${token}` }
+  const isLocal = location.protocol === 'file:';
+  const baseUrl = `https://api.smartsheet.com/2.0/sheets/${sheetId}`;
+  const url = isLocal
+    ? `https://corsproxy.io/?${encodeURIComponent(baseUrl)}`
+    : baseUrl;
+
+  const res = await fetch(url, {
+    headers: {
+      'Authorization': `Bearer ${token}`,
+      'x-requested-with': 'XMLHttpRequest'
+    }
   });
   if (!res.ok) throw new Error(`Smartsheet error ${res.status}: ${res.statusText}`);
   return res.json();
